@@ -5,7 +5,7 @@ import threading
 
 '''
 Readme 
-python env >= 3.8
+python env >= 3.9
 
 Install
 $ pip install bardapi
