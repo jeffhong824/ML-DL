@@ -10,7 +10,7 @@ python env >= 3.8
 Install
 $ pip install bardapi
 $ pip install git+https://github.com/dsdanielpark/Bard-API.git
-$ pip install bardapi==0.1.23a
+$ pip install bardapi==0.1.38
 '''
 
 def llm_response_process(llm_response):
