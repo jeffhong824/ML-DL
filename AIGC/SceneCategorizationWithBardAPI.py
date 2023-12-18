@@ -2,6 +2,7 @@
 from bardapi import Bard
 import os
 import threading
+from tqdm import tqdm
 
 '''
 Readme 
@@ -44,9 +45,7 @@ def llm_response_process(llm_response):
     
     return clean_categorization_list
 
-def analyze_image(BARD_API_KEY, image_path):
-    os.environ["_BARD_API_KEY"] = BARD_API_KEY
-
+def analyze_image(bard, image_path):
     prompt1 = ''' Identify the scene depicted in the image.
     
     Input Format:
@@ -176,16 +175,25 @@ def analyze_image(BARD_API_KEY, image_path):
     * **motorcycle:** S/D - Similar to cars and trucks, parked motorcycles are static (S), while moving ones are dynamic (D).
     * **bicycle:** S/D - Similar to the above, parked bicycles are static (S), while moving ones are dynamic (D).
     '''
-    bard = Bard()
     with open(image_path, 'rb') as img_file:
         image = img_file.read()
-    bard_answer1 = bard.ask_about_image(prompt1, image)
+
+    default_list = [False, False, True, True, False, True, False, False, False, True, False, False, False, False, False, False, False, False, False]
+    try:
+        bard_answer1 = bard.ask_about_image(prompt1, image)
+    except:
+        boolean_list = default_list
     # print(bard_answer1['content'])
-    bard_answer2 = bard.get_answer(prompt2)
-    # print(bard_answer2['content'])
-    llm_response = bard_answer2['content'].replace('*','')
-    categorization_list = llm_response_process(llm_response)
-    boolean_list = [cat == 'S' for cat in categorization_list]
+    try:
+        bard_answer2 = bard.get_answer(prompt2)
+        # print(bard_answer2['content'])
+        llm_response = bard_answer2['content'].replace('*','')
+        categorization_list = llm_response_process(llm_response)
+        boolean_list = [cat == 'S' for cat in categorization_list]
+        if boolean_list == [False for each in range(19)]:
+            boolean_list =  default_list
+    except:
+        boolean_list = default_list
     return boolean_list
 
 # 'S'（靜態）、'D'（動態）、'N'（非適合場景建圖的類別）或'I'（不應該出現的類別）
@@ -193,4 +201,15 @@ def analyze_image(BARD_API_KEY, image_path):
 if __name__ == '__main__':
     BARD_API_KEY = "eAjA29tVQl7ZdPqB7vbZYFE9mhDOTxC8s9QLEZYCxDCmByorzIISMYbcONNV67IDHdoDlQ."
     image_path = 'D:/Record/在職進修/修課/三維電腦視覺與深度學習應用/Final project/停車場.jpg'
-    boolean_list = analyze_image(BARD_API_KEY, image_path)
+    
+    os.environ["_BARD_API_KEY"] = BARD_API_KEY
+    bard = Bard()
+    for i in tqdm(range(10)):
+        need_run = True
+        while need_run:
+            try:
+                boolean_list = analyze_image(bard, image_path)
+                need_run = False
+            except:
+                bard = Bard()
+                print('new conversation')
