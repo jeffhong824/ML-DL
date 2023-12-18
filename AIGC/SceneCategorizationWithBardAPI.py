@@ -28,7 +28,8 @@ def llm_response_process(llm_response):
     start_index = llm_response.find("Scene:") + len("Scene:") # Find the start index of the scene description
     end_index = llm_response.find("\n", start_index) # Find the end index of the scene description (which is the start of 'Categories:')
     scene = llm_response[start_index:end_index].strip() # Extract the scene description
-    
+
+    '''
     for category in categories:
         if category + ":" in llm_response:
             # Find the categorization for each category
@@ -46,7 +47,8 @@ def llm_response_process(llm_response):
             clean_categorization_list.append(categorization)
         else:
             clean_categorization_list.append('N/A')  # Placeholder for missing category
-    
+    '''
+    clean_categorization_list = status_codes = re.findall(r": (\w)", llm_response)
     return scene, clean_categorization_list
 
 def analyze_image(bard, image_path):
@@ -258,7 +260,7 @@ def analyze_image(bard, image_path):
         llm_response = bard_answer2['content'].replace('*','')
         scene, categorization_list = llm_response_process(llm_response)
         boolean_list = [cat == 'S' for cat in categorization_list]
-        if boolean_list == [False for each in range(19)]:
+        if boolean_list == [False for each in range(19)] or len(boolean_list)!= 8:
             boolean_list =  default_list
     except:
         boolean_list = default_list
