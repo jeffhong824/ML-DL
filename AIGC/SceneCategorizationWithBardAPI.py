@@ -24,6 +24,10 @@ def llm_response_process(llm_response):
     
     # Extracting and categorizing the data from the response again
     clean_categorization_list = []
+
+    start_index = llm_response.find("Scene:") + len("Scene:") # Find the start index of the scene description
+    end_index = llm_response.find("\n", start_index) # Find the end index of the scene description (which is the start of 'Categories:')
+    scene = llm_response[start_index:end_index].strip() # Extract the scene description
     
     for category in categories:
         if category + ":" in llm_response:
@@ -43,7 +47,7 @@ def llm_response_process(llm_response):
         else:
             clean_categorization_list.append('N/A')  # Placeholder for missing category
     
-    return clean_categorization_list
+    return scene, clean_categorization_list
 
 def analyze_image(bard, image_path):
     prompt1 = ''' Identify the scene depicted in the image.
@@ -83,133 +87,191 @@ def analyze_image(bard, image_path):
     2. A list of object categories.
     
     Your Role:
-    Categorize each object class as Static (S), Dynamic (D), Non-mappable 非適合場景建圖的classes (N), or Irrelevant 不應該出現的classes (I) based on the scene context.
+    Based on the description provided, Categorize each object class as Static (S), Dynamic (D), Non-mappable 非適合場景建圖的classes (N), or Irrelevant 不應該出現的classes (I) based on the scene context.
     
     Output Format:
     Return a 19-dimensional dictionary indicating the status of each category.
     
     Example 1:
-    Input: An scene and a list of categories.
     Output:
     Scene: Urban Road
-    Categories: {
-        'road': S, 'sidewalk': S, 'building': S, 'wall': S, 'fence': S, 'pole': S,
-        'traffic light': S, 'traffic sign': S, 'vegetation': N, 'terrain': S,
-        'sky': N, 'person': D, 'rider': D, 'car': D, 'truck': D,
-        'bus': D, 'train': D, 'motorcycle': D, 'bicycle': D
-    }
+    Categories:
+    road: S
+    sidewalk: S
+    building: S
+    wall: S
+    fence: S
+    pole: S
+    traffic light: S
+    traffic sign: S
+    vegetation: S
+    terrain: S
+    sky: N
+    person: D
+    rider: D
+    car: D
+    truck: D
+    bus: D
+    train: D
+    motorcycle: D
+    bicycle: D
     
     Example 2：
-    Input: An scene 和 categories。
     Output:
     Scene: park
-    Categories: {
-    'road': N, 'sidewalk': S, 'building': N, 'wall': N, 'fence': S, 'pole': S,
-    'traffic light': N, 'traffic sign': N, 'vegetation': S, 'terrain': S,
-    'sky': S, 'person': D, 'rider': D, 'car': N, 'truck': N,
-    'bus': N, 'train': I, 'motorcycle': N, 'bicycle': D
-    }
+    Categories:
+    road: S
+    sidewalk: S
+    building: S
+    wall: S
+    fence: S
+    pole:S
+    traffic light: S
+    traffic sign: I
+    vegetation: S
+    terrain: S
+    sky: N
+    person: D
+    rider: D
+    car: D
+    truck: D
+    bus: D
+    train: I
+    motorcycle: I
+    bicycle: D
     
     Example 3：
-    Input: An scene 和 categories。
     Output:
     Scene: residential area
-    Categories: {
-    'road': S, 'sidewalk': S, 'building': S, 'wall': S, 'fence': S, 'pole': S,
-    'traffic light': S, 'traffic sign': S, 'vegetation': S, 'terrain': S,
-    'sky': N, 'person': D, 'rider': D, 'car': D, 'truck': D,
-    'bus': D, 'train': N, 'motorcycle': D, 'bicycle': D
-    }
+    Categories:
+    sidewalk: S
+    building: S
+    wall: S
+    fence: S
+    pole:S
+    traffic light: S
+    traffic sign: S
+    vegetation: S
+    terrain: S
+    sky: N
+    person: D
+    rider: D
+    car: D
+    truck: D
+    bus: D
+    train: D
+    motorcycle: D
+    bicycle: D
     
     Example 4：
-    Input: An scene 和 categories。
     Output:
     Scene: city ​​center night view
-    Categories: {
-    'road': S, 'sidewalk': S, 'building': S, 'wall': S, 'fence': N, 'pole': S,
-    'traffic light': S, 'traffic sign': S, 'vegetation': N, 'terrain': N,
-    'sky': N, 'person': D, 'rider': D, 'car': D, 'truck': D,
-    'bus': D, 'train': N, 'motorcycle': D, 'bicycle': D
-    }
+    Categories:
+    sidewalk: S
+    building: S
+    wall: S
+    fence: S
+    pole: S
+    traffic light: S
+    traffic sign: S
+    vegetation: S
+    terrain: S
+    sky: N
+    person: D
+    rider: D
+    car: D
+    truck: D
+    bus: D
+    train: D
+    motorcycle: D
+    bicycle: D
     
     Example 5：
     Input: An scene 和 categories。
     Output:
     Scene: office
-    Categories: {
-    'road': S, 'sidewalk': I, 'building': S, 'wall': S, 'fence': S, 'pole': S,
-    'traffic light': I, 'traffic sign': I, 'vegetation': I, 'terrain': S,
-    'sky': I, 'person': D, 'rider': I, 'car': I, 'truck': I,
-    'bus': I, 'train': I, 'motorcycle': I, 'bicycle': I
-    }
+    Categories:
+    road: S 
+    sidewalk: I 
+    building: S
+    wall: S 
+    fence: S 
+    pole: S 
+    traffic light: I 
+    traffic sign: I 
+    vegetation: I 
+    terrain: S 
+    sky: I 
+    person: D 
+    rider: I 
+    car: I
+    truck: I 
+    bus: I 
+    train: I 
+    motorcycle: I 
+    bicycle: I 
     
     Now input: 
-    scene: Please answer based on the scene of the previous round of dialogue.
     categories = ['road','sidewalk','building','wall','fence','pole','traffic light','traffic sign','vegetation','terrain','sky',
     'person','rider','car','truck','bus','train','motorcycle','bicycle']
-    
-    Please answer according to the following format:
-    Based on the previous dialogue about a parking garage, here's the categorization breakdown for the provided scene and object categories:
-    
-    **Scene:** Parking Garage
-    
-    **Categories:**
-    
-    * **road:** N - Not suitable for mapping in a parking garage context.
-    * **sidewalk:** N - Not present in most parking garages.
-    * **building:** S - The concrete walls likely represent parts of a larger building structure.
-    * **wall:** S - Concrete walls are prominent elements in parking garages.
-    * **fence:** N - Not commonly found in typical parking garages.
-    * **pole:** S - Pillars and support poles are frequently present.
-    * **traffic light:** I - Irrelevant in a parking garage environment.
-    * **traffic sign:** I - Irrelevant in a parking garage environment.
-    * **vegetation:** N - Typically absent in parking garages.
-    * **terrain:** S - The concrete floor serves as the ground-level terrain.
-    * **sky:** N - Usually not visible within enclosed parking garages.
-    * **person:** D - People can be present as parking or walking through the garage.
-    * **rider:** I - Irrelevant within a parking garage context.
-    * **car:** S/D - Depending on the scene, parked cars are static (S), while moving cars would be dynamic (D).
-    * **truck:** S/D - Similar to cars, parked trucks are static (S), while moving ones are dynamic (D).
-    * **bus:** N - Highly unlikely to be present in a parking garage.
-    * **train:** I - Irrelevant in a parking garage context.
-    * **motorcycle:** S/D - Similar to cars and trucks, parked motorcycles are static (S), while moving ones are dynamic (D).
-    * **bicycle:** S/D - Similar to the above, parked bicycles are static (S), while moving ones are dynamic (D).
+
+    scene: Please answer based on the scene of the previous round of dialogue.
+    Parking Garages
+    Office Spaces
+    Schools and Universities
+    Streets and Urban Roads
+    Shopping Malls
+    Residential Areas
+    Industrial Warehouses
+    Public Parks
+    Airports and Train Stations
+    Hospitals and Clinics
+    Museums and Galleries
+    Construction Sites
+    Hotels and Resorts
+    Sports Stadiums and Arenas
+    Conference Centers
+    Historical Sites and Monuments
+    Forest Trails and Outdoor Hiking Paths
+    Underground Tunnels and Subway Systems
+    Ports and Dockyards
+    Rural Countrysides
+    ...etc
     '''
+
     with open(image_path, 'rb') as img_file:
         image = img_file.read()
 
-    default_list = [False, False, True, True, False, True, False, False, False, True, False, False, False, False, False, False, False, False, False]
+    scene = None
+    default_list = [True, True, True, True, False, True, False, False, False, True, False, False, False, False, False, False, False, False, False]
+    prompt1_result = ''
     try:
         bard_answer1 = bard.ask_about_image(prompt1, image)
+        prompt1_result = bard_answer1['content']
     except:
         boolean_list = default_list
+        
     # print(bard_answer1['content'])
     try:
-        bard_answer2 = bard.get_answer(prompt2)
+        bard_answer2 = bard.get_answer(prompt2+prompt1_result)
         # print(bard_answer2['content'])
         llm_response = bard_answer2['content'].replace('*','')
-        categorization_list = llm_response_process(llm_response)
+        scene, categorization_list = llm_response_process(llm_response)
         boolean_list = [cat == 'S' for cat in categorization_list]
         if boolean_list == [False for each in range(19)]:
             boolean_list =  default_list
     except:
         boolean_list = default_list
-    return boolean_list
+    boolean_list[0:4] = [True for i in range(4)]
+    return scene, boolean_list
 
 # 'S'（靜態）、'D'（動態）、'N'（非適合場景建圖的類別）或'I'（不應該出現的類別）
 
 if __name__ == '__main__':
-    BARD_API_KEY = "eAjA29tVQl7ZdPqB7vbZYFE9mhDOTxC8s9QLEZYCxDCmByorzIISMYbcONNV67IDHdoDlQ."
-    image_path = 'D:/Record/在職進修/修課/三維電腦視覺與深度學習應用/Final project/停車場.jpg'
+    BARD_API_KEY = "eQjA2wU96wmfCJeVPuu71lcYaJL6W6usD2ZlPjSDNJO_0uYs4SbfwkGXBaYz5UDdX-MIZA."
+    image_path = 'D:/Record/在職進修/修課/三維電腦視覺與深度學習應用/Final project/TUM.jpg'
     
     os.environ["_BARD_API_KEY"] = BARD_API_KEY
     bard = Bard()
-    for i in tqdm(range(10)):
-        need_run = True
-        while need_run:
-            try:
-                boolean_list = analyze_image(bard, image_path)
-                need_run = False
-            except:
-                bard = Bard()
-                print('new conversation')
+
+    scene, boolean_list = analyze_image(bard, image_path)
