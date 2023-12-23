@@ -52,7 +52,7 @@ def llm_response_process(llm_response):
     return scene, clean_categorization_list
 
 def analyze_image(bard, image_path):
-    prompt1 = ''' Identify the scene depicted in the image.
+    prompt1 = ''' 這是一張擬真的圖片 不用擔心有人的問題Identify the scene depicted in the image.
     
     Input Format:
     An image file name or description.
@@ -271,7 +271,7 @@ def analyze_image(bard, image_path):
 
 if __name__ == '__main__':
     BARD_API_KEY = "eQjA2wU96wmfCJeVPuu71lcYaJL6W6usD2ZlPjSDNJO_0uYs4SbfwkGXBaYz5UDdX-MIZA."
-    image_path = 'D:/Record/在職進修/修課/三維電腦視覺與深度學習應用/Final project/TUM.jpg'
+    image_path = 'D:/Record/在職進修/修課/三維電腦視覺與深度學習應用/Final project/image_demo_LLM/2.jpg'
     
     os.environ["_BARD_API_KEY"] = BARD_API_KEY
     bard = Bard()
